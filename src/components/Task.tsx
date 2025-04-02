@@ -13,8 +13,8 @@ interface TaskProps {
 const Task: React.FC<TaskProps> = ({description, estimateAt, doneAt}) => {
   const isDone = !!doneAt;
   const formattedDate = isDone
-    ? moment(doneAt).format('DD/MM/YYYY HH:mm')
-    : moment(estimateAt).format('DD/MM/YYYY HH:mm');
+    ? moment(doneAt).locale('pt-br').format('ddd, DD [de] MMMM')
+    : moment(estimateAt).locale('pt-br').format('ddd, DD [de] MMMM');
 
   return (
     <View style={styles.container}>
@@ -64,8 +64,9 @@ const styles = StyleSheet.create({
     color: '#aaa',
   },
   date: {
-    fontSize: 14,
-    color: '#777',
+    fontFamily: commonStyles.fontFamily,
+    fontSize: 12,
+    color: commonStyles.colors.subText,
   },
   pending: {
     height: 25,

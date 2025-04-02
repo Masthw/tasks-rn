@@ -1,14 +1,19 @@
-import React from 'react';
-import {View, Text, ImageBackground, StyleSheet} from 'react-native';
+import React, { useState } from 'react';
+import {View, Text, ImageBackground, StyleSheet, FlatList} from 'react-native';
 import Task from '../components/Task';
 import commonStyles from '../commonStyles';
 import todayImage from '../../assets/imgs/today.jpg';
-
 import moment from 'moment';
 import 'moment/locale/pt-br';
 
 const TaskList: React.FC = () => {
   const today = moment().locale('pt-br').format('ddd, D [de] MMMM');
+
+  const [tasks, setTasks] = useState([
+    { id: '1', description: 'Comprar Livro', estimateAt: new Date(), doneAt: new Date() },
+    { id: '2', description: 'EXPLODIR Livro', estimateAt: new Date(), doneAt: null },
+    { id: '3', description: 'Ir à academia', estimateAt: new Date(), doneAt: null },
+  ]);
 
   return (
     <View style={styles.container}>
@@ -19,8 +24,17 @@ const TaskList: React.FC = () => {
         </View>
       </ImageBackground>
       <View style={styles.taskList}>
-        <Task description="Comprar Livro" estimateAt={new Date()} doneAt={new Date()}/>
-        <Task description="EXPLODIR Livro" estimateAt={new Date()} doneAt={null} />
+      <FlatList
+          data={tasks}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => (
+            <Task
+              description={item.description}
+              estimateAt={item.estimateAt}
+              doneAt={item.doneAt}
+            />
+          )}
+        />
       </View>
     </View>
   );
