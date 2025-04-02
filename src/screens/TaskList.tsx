@@ -1,14 +1,24 @@
 import React, {useState} from 'react';
-import {View, Text, ImageBackground, StyleSheet, FlatList} from 'react-native';
+import {
+  View,
+  Text,
+  ImageBackground,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import Task from '../components/Task';
 import commonStyles from '../commonStyles';
 import todayImage from '../../assets/imgs/today.jpg';
 import moment from 'moment';
 import 'moment/locale/pt-br';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const TaskList: React.FC = () => {
   const today = moment().locale('pt-br').format('ddd, D [de] MMMM');
 
+  const [showDoneTasks, setShowDoneTasks] = useState(true);
   const [tasks, setTasks] = useState([
     {
       id: '1',
@@ -30,6 +40,10 @@ const TaskList: React.FC = () => {
     },
   ]);
 
+  const toggleFilter = () => {
+    setShowDoneTasks(prev => !prev);
+  };
+
   const toggleTask = (taskId: string) => {
     setTasks(prevTasks =>
       prevTasks.map(task =>
@@ -40,6 +54,8 @@ const TaskList: React.FC = () => {
     );
   };
 
+  const filteredTasks = showDoneTasks ? tasks : tasks.filter(task => !task.doneAt);
+
   return (
     <View style={styles.container}>
       <ImageBackground style={styles.background} source={todayImage}>
@@ -47,10 +63,15 @@ const TaskList: React.FC = () => {
           <Text style={styles.title}>Hoje</Text>
           <Text style={styles.subtitle}>{today}</Text>
         </View>
+        <View style={styles.filterContainer}>
+          <TouchableOpacity onPress={toggleFilter} style={styles.filterButton}>
+            <Icon name={showDoneTasks ? 'eye' : 'eye-slash'} size={24} color="#FFF" />
+          </TouchableOpacity>
+        </View>
       </ImageBackground>
       <View style={styles.taskList}>
         <FlatList
-          data={tasks}
+          data={filteredTasks}
           keyExtractor={item => item.id}
           renderItem={({item}) => (
             <Task
@@ -95,5 +116,14 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginBottom: 30,
   },
+  filterContainer: {
+    position: 'absolute',
+    top: Platform.select({ ios: 50, android: 30 }),
+    right: 20,
+  },
+  filterButton: {
+    padding: 10,
+  },
 });
+
 export default TaskList;
