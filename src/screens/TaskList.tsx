@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, ImageBackground, StyleSheet} from 'react-native';
-
+import Task from '../components/Task';
 import commonStyles from '../commonStyles';
 import todayImage from '../../assets/imgs/today.jpg';
 
@@ -19,9 +19,8 @@ const TaskList: React.FC = () => {
         </View>
       </ImageBackground>
       <View style={styles.taskList}>
-        <Text>TaskList</Text>
-        <Text>TaskList</Text>
-        <Text>TaskList</Text>
+        <Task description="Comprar Livro" estimateAt={new Date()} doneAt={new Date()}/>
+        <Task description="EXPLODIR Livro" estimateAt={new Date()} doneAt={null} />
       </View>
     </View>
   );
