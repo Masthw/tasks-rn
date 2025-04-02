@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {View, Text, ImageBackground, StyleSheet, FlatList} from 'react-native';
 import Task from '../components/Task';
 import commonStyles from '../commonStyles';
@@ -10,10 +10,35 @@ const TaskList: React.FC = () => {
   const today = moment().locale('pt-br').format('ddd, D [de] MMMM');
 
   const [tasks, setTasks] = useState([
-    { id: '1', description: 'Comprar Livro', estimateAt: new Date(), doneAt: new Date() },
-    { id: '2', description: 'EXPLODIR Livro', estimateAt: new Date(), doneAt: null },
-    { id: '3', description: 'Ir à academia', estimateAt: new Date(), doneAt: null },
+    {
+      id: '1',
+      description: 'Comprar Livro',
+      estimateAt: new Date(),
+      doneAt: new Date(),
+    },
+    {
+      id: '2',
+      description: 'EXPLODIR Livro',
+      estimateAt: new Date(),
+      doneAt: null,
+    },
+    {
+      id: '3',
+      description: 'Ir à academia',
+      estimateAt: new Date(),
+      doneAt: null,
+    },
   ]);
+
+  const toggleTask = (taskId: string) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId
+          ? {...task, doneAt: task.doneAt ? null : new Date()}
+          : task,
+      ),
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -24,14 +49,16 @@ const TaskList: React.FC = () => {
         </View>
       </ImageBackground>
       <View style={styles.taskList}>
-      <FlatList
+        <FlatList
           data={tasks}
           keyExtractor={item => item.id}
-          renderItem={({ item }) => (
+          renderItem={({item}) => (
             <Task
+              id={item.id}
               description={item.description}
               estimateAt={item.estimateAt}
               doneAt={item.doneAt}
+              toggleTask={toggleTask}
             />
           )}
         />

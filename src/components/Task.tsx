@@ -1,16 +1,24 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, TouchableWithoutFeedback} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
 import commonStyles from '../commonStyles';
 
 interface TaskProps {
+  id: string;
   description: string;
   estimateAt: Date;
   doneAt?: Date | null;
+  toggleTask: (id: string) => void;
 }
 
-const Task: React.FC<TaskProps> = ({description, estimateAt, doneAt}) => {
+const Task: React.FC<TaskProps> = ({
+  id,
+  description,
+  estimateAt,
+  doneAt,
+  toggleTask,
+}) => {
   const isDone = !!doneAt;
   const formattedDate = isDone
     ? moment(doneAt).locale('pt-br').format('ddd, DD [de] MMMM')
@@ -18,7 +26,9 @@ const Task: React.FC<TaskProps> = ({description, estimateAt, doneAt}) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.checkContainer}>{getCheckView(doneAt)}</View>
+      <TouchableWithoutFeedback onPress={() => toggleTask(id)}>
+        <View style={styles.checkContainer}>{getCheckView(doneAt)}</View>
+      </TouchableWithoutFeedback>
       <View>
         <Text style={[styles.text, isDone && styles.textDone]}>
           {description}
