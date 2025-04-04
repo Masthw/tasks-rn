@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -15,32 +15,55 @@ import moment from 'moment';
 import 'moment/locale/pt-br';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddTask from './AddTask';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+type TaskType = {
+  id: string;
+  description: string;
+  estimateAt: Date;
+  doneAt: Date | null;
+};
+
+
 
 const TaskList: React.FC = () => {
   const today = moment().locale('pt-br').format('ddd, D [de] MMMM');
 
   const [showAddTask, setShowAddTask] = useState(false);
   const [showDoneTasks, setShowDoneTasks] = useState(true);
-  const [tasks, setTasks] = useState([
-    {
-      id: '1',
-      description: 'Comprar Livro',
-      estimateAt: new Date(),
-      doneAt: new Date(),
-    },
-    {
-      id: '2',
-      description: 'EXPLODIR Livro',
-      estimateAt: new Date(),
-      doneAt: null,
-    },
-    {
-      id: '3',
-      description: 'Ir à academia',
-      estimateAt: new Date(),
-      doneAt: null,
-    },
-  ]);
+  const [tasks, setTasks] = useState<TaskType[]>([]);
+
+useEffect(() => {
+  loadTasks();
+}, []);
+
+const loadTasks = async () => {
+  try {
+    const saved = await AsyncStorage.getItem('tasks');
+    const parsed = saved
+    ? JSON.parse(saved).map((task: any) => ({
+        ...task,
+        estimateAt: new Date(task.estimateAt),
+        doneAt: task.doneAt ? new Date(task.doneAt) : null,
+      }))
+    : [];
+    setTasks(parsed);
+  } catch (e) {
+    console.error('Erro ao carregar tarefas:', e);
+  }
+};
+
+useEffect(() => {
+  saveTasks(tasks);
+}, [tasks]);
+
+const saveTasks = async (newTasks: TaskType[]) => {
+  try {
+    await AsyncStorage.setItem('tasks', JSON.stringify(newTasks));
+  } catch (e) {
+    console.error('Erro ao salvar tarefas:', e);
+  }
+};
 
   const toggleFilter = () => {
     setShowDoneTasks(prev => !prev);
@@ -56,11 +79,15 @@ const TaskList: React.FC = () => {
     );
   };
 
+  const deleteTask = (taskId: string) => {
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+  };
+
   const handleAddTask = (description: string, date: Date) => {
     setTasks(prevTasks => [
       ...prevTasks,
       {
-        id: String(prevTasks.length + 1),
+        id: String(Date.now()),
         description,
         estimateAt: date,
         doneAt: null,
@@ -106,6 +133,7 @@ const TaskList: React.FC = () => {
               estimateAt={item.estimateAt}
               doneAt={item.doneAt}
               toggleTask={toggleTask}
+              deleteTask={deleteTask}
             />
           )}
         />

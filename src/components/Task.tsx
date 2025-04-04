@@ -1,5 +1,12 @@
 import React from 'react';
-import {View, Text, StyleSheet, TouchableWithoutFeedback} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+} from 'react-native';
+import {GestureHandlerRootView, Swipeable} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
 import commonStyles from '../commonStyles';
@@ -10,6 +17,7 @@ interface TaskProps {
   estimateAt: Date;
   doneAt?: Date | null;
   toggleTask: (id: string) => void;
+  deleteTask: (id: string) => void;
 }
 
 const Task: React.FC<TaskProps> = ({
@@ -18,24 +26,37 @@ const Task: React.FC<TaskProps> = ({
   estimateAt,
   doneAt,
   toggleTask,
+  deleteTask,
 }) => {
   const isDone = !!doneAt;
   const formattedDate = isDone
     ? moment(doneAt).locale('pt-br').format('ddd, DD [de] MMMM')
     : moment(estimateAt).locale('pt-br').format('ddd, DD [de] MMMM');
 
+  const renderRightActions = () => (
+    <TouchableOpacity
+      style={styles.deleteButton}
+      onPress={() => deleteTask(id)}>
+      <Icon name="trash" size={25} color="#FFF" />
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.container}>
-      <TouchableWithoutFeedback onPress={() => toggleTask(id)}>
-        <View style={styles.checkContainer}>{getCheckView(doneAt)}</View>
-      </TouchableWithoutFeedback>
-      <View>
-        <Text style={[styles.text, isDone && styles.textDone]}>
-          {description}
-        </Text>
-        <Text style={styles.date}>{formattedDate}</Text>
-      </View>
-    </View>
+    <GestureHandlerRootView>
+      <Swipeable renderRightActions={renderRightActions}>
+        <View style={styles.container}>
+          <TouchableWithoutFeedback onPress={() => toggleTask(id)}>
+            <View style={styles.checkContainer}>{getCheckView(doneAt)}</View>
+          </TouchableWithoutFeedback>
+          <View>
+            <Text style={[styles.text, isDone && styles.textDone]}>
+              {description}
+            </Text>
+            <Text style={styles.date}>{formattedDate}</Text>
+          </View>
+        </View>
+      </Swipeable>
+    </GestureHandlerRootView>
   );
 };
 
@@ -58,6 +79,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#aaa',
+    backgroundColor: '#fff',
   },
   checkContainer: {
     width: '20%',
@@ -92,6 +114,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#4D7031',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
   },
 });
 
