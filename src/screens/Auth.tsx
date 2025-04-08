@@ -5,14 +5,13 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
-  TextInput,
   View,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 
 import backgroundImage from '../../assets/imgs/login.jpg';
 import commonStyles from '../commonStyles';
+import AuthInput from '../components/AuthInput';
 
 type Styles = {
   background: ViewStyle;
@@ -41,7 +40,8 @@ const Auth: React.FC = () => {
           {stageNew ? 'Crie a sua conta' : 'Informe seus dados'}
         </Text>
         {stageNew && (
-          <TextInput
+          <AuthInput
+          icon="user"
             placeholder="Nome"
             value={name}
             onChangeText={setName}
@@ -50,7 +50,8 @@ const Auth: React.FC = () => {
             autoCapitalize="none"
           />
         )}
-        <TextInput
+        <AuthInput
+          icon="envelope"
           placeholder="E-mail"
           value={email}
           onChangeText={setEmail}
@@ -58,7 +59,8 @@ const Auth: React.FC = () => {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        <TextInput
+        <AuthInput
+          icon="lock"
           placeholder="Senha"
           value={password}
           onChangeText={setPassword}
@@ -66,7 +68,8 @@ const Auth: React.FC = () => {
           secureTextEntry
         />
         {stageNew && (
-          <TextInput
+          <AuthInput
+            icon="lock"
             placeholder="Confirmar Senha"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -89,7 +92,9 @@ const Auth: React.FC = () => {
         onPress={() => {
           setStageNew(!stageNew);
         }}>
-        <Text style={styles.buttonText}>{stageNew ? 'Já possui conta?' : 'Ainda não possui conta?'}</Text>
+        <Text style={styles.buttonText}>
+          {stageNew ? 'Já possui conta?' : 'Ainda não possui conta?'}
+        </Text>
       </TouchableOpacity>
     </ImageBackground>
   );
@@ -111,10 +116,9 @@ const styles = StyleSheet.create<Styles>({
   input: {
     backgroundColor: '#FFF',
     marginTop: 10,
-    padding: Platform.OS === 'ios' ? 15 : 10,
   },
   formContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     padding: 20,
     width: '90%',
   },
@@ -123,6 +127,7 @@ const styles = StyleSheet.create<Styles>({
     marginTop: 10,
     padding: 10,
     alignItems: 'center',
+    borderRadius: 10,
   },
   buttonText: {
     fontFamily: commonStyles.fontFamily,
