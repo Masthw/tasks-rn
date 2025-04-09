@@ -8,10 +8,13 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
+import axios from 'axios';
 
 import backgroundImage from '../../assets/imgs/login.jpg';
 import commonStyles from '../commonStyles';
 import AuthInput from '../components/AuthInput';
+
+import {server, showError, showSuccess} from '../common';
 
 type Styles = {
   background: ViewStyle;
@@ -30,7 +33,34 @@ const Auth: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [stageNew, setStageNew] = useState(false);
 
-  function signinOrSignup() {}
+  function signinOrSignup() {
+    if (stageNew) {
+      signup();
+    }
+  }
+
+  async function signup() {
+    if (password !== confirmPassword) {
+      showError('As senhas não coincidem');
+      return;
+    }
+    try {
+      await axios.post(`${server}/signup`, {
+        name: name,
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+      });
+      showSuccess('Usuário cadastrado!');
+      setName('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setStageNew(false);
+    } catch (e) {
+      showError(e);
+    }
+  }
 
   return (
     <ImageBackground source={backgroundImage} style={styles.background}>
@@ -41,7 +71,7 @@ const Auth: React.FC = () => {
         </Text>
         {stageNew && (
           <AuthInput
-          icon="user"
+            icon="user"
             placeholder="Nome"
             value={name}
             onChangeText={setName}
@@ -74,8 +104,7 @@ const Auth: React.FC = () => {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
+            secureTextEntry
           />
         )}
         <TouchableOpacity onPress={signinOrSignup}>
