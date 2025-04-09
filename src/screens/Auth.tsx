@@ -24,6 +24,9 @@ type Styles = {
   button: ViewStyle;
   buttonText: TextStyle;
   subtitle: TextStyle;
+  inputError: ViewStyle;
+  buttonDisabled: ViewStyle;
+  errorText: TextStyle;
 };
 
 const Auth: React.FC<any> = ({navigation}) => {
@@ -32,8 +35,10 @@ const Auth: React.FC<any> = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [stageNew, setStageNew] = useState(false);
+  const [wasSubmitted, setWasSubmitted] = useState(false);
 
   function signinOrSignup() {
+    setWasSubmitted(true);
     if (stageNew) {
       signup();
     } else {
@@ -42,6 +47,21 @@ const Auth: React.FC<any> = ({navigation}) => {
   }
 
   async function signup() {
+    if (!name.trim()) {
+      showError('Informe o nome');
+      return;
+    }
+
+    if (!isValidEmail()) {
+      showError('E-mail inválido');
+      return;
+    }
+
+    if (!isValidPassword()) {
+      showError('A senha deve ter no mínimo 6 caracteres');
+      return;
+    }
+
     if (password !== confirmPassword) {
       showError('As senhas não coincidem');
       return;
@@ -79,6 +99,15 @@ const Auth: React.FC<any> = ({navigation}) => {
     }
   }
 
+  function isValidEmail() {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  function isValidPassword() {
+    return password.length >= 6;
+  }
+
   return (
     <ImageBackground source={backgroundImage} style={styles.background}>
       <Text style={styles.title}>Tasks</Text>
@@ -87,45 +116,81 @@ const Auth: React.FC<any> = ({navigation}) => {
           {stageNew ? 'Crie a sua conta' : 'Informe seus dados'}
         </Text>
         {stageNew && (
-          <AuthInput
-            icon="user"
-            placeholder="Nome"
-            value={name}
-            onChangeText={setName}
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <>
+            <AuthInput
+              icon="user"
+              placeholder="Nome"
+              value={name}
+              onChangeText={setName}
+              style={[
+                styles.input,
+                wasSubmitted && name.trim() === '' && styles.inputError,
+              ]}
+              keyboardType="default"
+              autoCapitalize="words"
+            />
+            {wasSubmitted && name.trim() === '' && (
+              <Text style={styles.errorText}>Informe o nome</Text>
+            )}
+          </>
         )}
         <AuthInput
           icon="envelope"
           placeholder="E-mail"
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
+          style={[
+            styles.input,
+            wasSubmitted && !isValidEmail() && email !== ''
+              ? styles.inputError
+              : null,
+          ]}
           keyboardType="email-address"
           autoCapitalize="none"
         />
+        {wasSubmitted && !isValidEmail() && (
+          <Text style={styles.errorText}>E-mail inválido</Text>
+        )}
         <AuthInput
           icon="lock"
           placeholder="Senha"
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
+          style={[
+            styles.input,
+            wasSubmitted && !isValidPassword() && password !== ''
+              ? styles.inputError
+              : null,
+          ]}
           secureTextEntry
         />
+        {wasSubmitted && !isValidPassword() && (
+          <Text style={styles.errorText}>
+            A senha deve ter no mínimo 6 caracteres
+          </Text>
+        )}
         {stageNew && (
-          <AuthInput
-            icon="lock"
-            placeholder="Confirmar Senha"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            style={styles.input}
-            secureTextEntry
-          />
+          <>
+            <AuthInput
+              icon="lock"
+              placeholder="Confirmar Senha"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              style={[
+                styles.input,
+                wasSubmitted &&
+                  password !== confirmPassword &&
+                  styles.inputError,
+              ]}
+              secureTextEntry
+            />
+            {wasSubmitted && password !== confirmPassword && (
+              <Text style={styles.errorText}>As senhas não coincidem</Text>
+            )}
+          </>
         )}
         <TouchableOpacity onPress={signinOrSignup}>
-          <View style={styles.button}>
+          <View style={[styles.button]}>
             <Text style={styles.buttonText}>
               {stageNew ? 'Registrar' : 'Entrar'}
             </Text>
@@ -137,6 +202,7 @@ const Auth: React.FC<any> = ({navigation}) => {
         style={{padding: 10}}
         onPress={() => {
           setStageNew(!stageNew);
+          setWasSubmitted(false);
         }}>
         <Text style={styles.buttonText}>
           {stageNew ? 'Já possui conta?' : 'Ainda não possui conta?'}
@@ -186,6 +252,20 @@ const styles = StyleSheet.create<Styles>({
     fontSize: 20,
     textAlign: 'center',
     marginBottom: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: '#555',
+    opacity: 0.6,
+  },
+  inputError: {
+    borderWidth: 1,
+    borderColor: 'red',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 5,
   },
 });
 
