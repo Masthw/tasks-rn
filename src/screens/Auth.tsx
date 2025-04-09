@@ -26,7 +26,7 @@ type Styles = {
   subtitle: TextStyle;
 };
 
-const Auth: React.FC = () => {
+const Auth: React.FC<any> = ({navigation}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,6 +36,8 @@ const Auth: React.FC = () => {
   function signinOrSignup() {
     if (stageNew) {
       signup();
+    } else {
+      signin();
     }
   }
 
@@ -46,10 +48,10 @@ const Auth: React.FC = () => {
     }
     try {
       await axios.post(`${server}/signup`, {
-        name: name,
-        email: email,
-        password: password,
-        confirmPassword: confirmPassword,
+        name,
+        email,
+        password,
+        confirmPassword,
       });
       showSuccess('Usuário cadastrado!');
       setName('');
@@ -59,6 +61,21 @@ const Auth: React.FC = () => {
       setStageNew(false);
     } catch (e) {
       showError(e);
+    }
+  }
+  async function signin() {
+    try {
+      const res = await axios.post(`${server}/signin`, {
+        email,
+        password,
+      });
+      axios.defaults.headers.common.Authorization = `bearer ${res.data.token}`;
+      navigation.navigate('Home');
+      showSuccess(`Bem-vindo(a), ${res.data.name}!`);
+      setEmail('');
+      setPassword('');
+    } catch (e) {
+      showError('E-mail ou senha inválidos!');
     }
   }
 
