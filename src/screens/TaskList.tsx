@@ -15,7 +15,9 @@ import moment from 'moment';
 import 'moment/locale/pt-br';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddTask from './AddTask';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {showError} from '../common';
+import api, { setAuthorizationToken } from '../services/api';
+
 
 type TaskType = {
   id: string;
@@ -24,8 +26,6 @@ type TaskType = {
   doneAt: Date | null;
 };
 
-
-
 const TaskList: React.FC = () => {
   const today = moment().locale('pt-br').format('ddd, D [de] MMMM');
 
@@ -33,69 +33,64 @@ const TaskList: React.FC = () => {
   const [showDoneTasks, setShowDoneTasks] = useState(true);
   const [tasks, setTasks] = useState<TaskType[]>([]);
 
-useEffect(() => {
-  loadTasks();
-}, []);
+  useEffect(() => {
+    const initialize = async () => {
+      await setAuthorizationToken();
+      loadTasks();
+    };
+    initialize();
+  }, []);
 
-const loadTasks = async () => {
-  try {
-    const saved = await AsyncStorage.getItem('tasks');
-    const parsed = saved
-    ? JSON.parse(saved).map((task: any) => ({
-        ...task,
-        estimateAt: new Date(task.estimateAt),
-        doneAt: task.doneAt ? new Date(task.doneAt) : null,
-      }))
-    : [];
-    setTasks(parsed);
-  } catch (e) {
-    console.error('Erro ao carregar tarefas:', e);
-  }
-};
-
-useEffect(() => {
-  saveTasks(tasks);
-}, [tasks]);
-
-const saveTasks = async (newTasks: TaskType[]) => {
-  try {
-    await AsyncStorage.setItem('tasks', JSON.stringify(newTasks));
-  } catch (e) {
-    console.error('Erro ao salvar tarefas:', e);
-  }
-};
+  const loadTasks = async () => {
+    try {
+      const maxDate = moment().format('YYYY-MM-DD 23:59:59');
+      const res = await api.get(`/tasks?date=${maxDate}`);
+      setTasks(res.data);
+    } catch (e) {
+      showError(e);
+    }
+  };
 
   const toggleFilter = () => {
     setShowDoneTasks(prev => !prev);
   };
 
-  const toggleTask = (taskId: string) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId
-          ? {...task, doneAt: task.doneAt ? null : new Date()}
-          : task,
-      ),
-    );
+  const toggleTask = async (taskId: string) => {
+    try {
+      await api.put(`/tasks/${taskId}/toggle`);
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId
+            ? {...task, doneAt: task.doneAt ? null : new Date()}
+            : task,
+        ),
+      );
+    } catch (e) {
+      showError('Não foi possível atualizar a tarefa');
+    }
   };
 
-  const deleteTask = (taskId: string) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+  const deleteTask = async (taskId: string) => {
+    try {
+      await api.delete(`/tasks/${taskId}`);
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    } catch (e) {
+      showError('Não foi possível deletar a tarefa');
+    }
   };
 
-  const handleAddTask = (description: string, date: Date) => {
-    setTasks(prevTasks => [
-      ...prevTasks,
-      {
-        id: String(Date.now()),
+  const handleAddTask = async (description: string, date: Date) => {
+    try {
+      await api.post('/tasks', {
         description,
         estimateAt: date,
-        doneAt: null,
-      },
-    ]);
-    setShowAddTask(false);
+      });
+      setShowAddTask(false);
+      loadTasks();
+    } catch (e) {
+      showError(e);
+    }
   };
-
   const filteredTasks = showDoneTasks
     ? tasks
     : tasks.filter(task => !task.doneAt);

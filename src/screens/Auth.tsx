@@ -9,12 +9,15 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import axios from 'axios';
+import { setAuthorizationToken } from '../services/api';
+
 
 import backgroundImage from '../../assets/imgs/login.jpg';
 import commonStyles from '../commonStyles';
 import AuthInput from '../components/AuthInput';
 
 import {server, showError, showSuccess} from '../common';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Styles = {
   background: ViewStyle;
@@ -89,7 +92,8 @@ const Auth: React.FC<any> = ({navigation}) => {
         email,
         password,
       });
-      axios.defaults.headers.common.Authorization = `bearer ${res.data.token}`;
+      await AsyncStorage.setItem('token', res.data.token);
+      await setAuthorizationToken();
       navigation.navigate('Home');
       showSuccess(`Bem-vindo(a), ${res.data.name}!`);
       setEmail('');
