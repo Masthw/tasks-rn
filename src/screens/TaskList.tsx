@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,12 @@ import {
 } from 'react-native';
 import Task from '../components/Task';
 import commonStyles from '../commonStyles';
-import todayImage from '../../assets/imgs/today.jpg';
 import moment from 'moment';
 import 'moment/locale/pt-br';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddTask from './AddTask';
 import {showError} from '../common';
-import api, { setAuthorizationToken } from '../services/api';
-
+import api, {setAuthorizationToken} from '../services/api';
 
 type TaskType = {
   id: string;
@@ -26,12 +24,65 @@ type TaskType = {
   doneAt: Date | null;
 };
 
-const TaskList: React.FC = () => {
-  const today = moment().locale('pt-br').format('ddd, D [de] MMMM');
+type TaskListProps = {
+  title: string;
+  daysAhead: number;
+  navigation: any;
+};
+
+const TaskList: React.FC<TaskListProps> = ({title, daysAhead, navigation}) => {
+  const dateSelected = moment()
+    .add(daysAhead, 'days')
+    .locale('pt-br')
+    .format('ddd, D [de] MMMM');
 
   const [showAddTask, setShowAddTask] = useState(false);
   const [showDoneTasks, setShowDoneTasks] = useState(true);
   const [tasks, setTasks] = useState<TaskType[]>([]);
+
+  const getImageForDaysAhead = () => {
+    if (daysAhead === 0) {
+      return require('../../assets/imgs/today.jpg');
+    }
+    if (daysAhead === 1) {
+      return require('../../assets/imgs/tomorrow.jpg');
+    }
+    if (daysAhead === 7) {
+      return require('../../assets/imgs/week.jpg');
+    }
+    if (daysAhead === 30) {
+      return require('../../assets/imgs/month.jpg');
+    }
+    return require('../../assets/imgs/today.jpg');
+  };
+
+  const getColorForDay = () => {
+    if (daysAhead === 0) {
+      return commonStyles.colors.today;
+    }
+    if (daysAhead === 1) {
+      return commonStyles.colors.tomorrow;
+    }
+    if (daysAhead === 7) {
+      return commonStyles.colors.week;
+    }
+    if (daysAhead === 30) {
+      return commonStyles.colors.month;
+    }
+    return commonStyles.colors.today;
+  };
+
+  const loadTasks = useCallback(async () => {
+    try {
+      const maxDate = moment()
+        .add(daysAhead, 'days')
+        .format('YYYY-MM-DD 23:59:59');
+      const res = await api.get(`/tasks?date=${maxDate}`);
+      setTasks(res.data);
+    } catch (e) {
+      showError(e);
+    }
+  }, [daysAhead]);
 
   useEffect(() => {
     const initialize = async () => {
@@ -39,17 +90,7 @@ const TaskList: React.FC = () => {
       loadTasks();
     };
     initialize();
-  }, []);
-
-  const loadTasks = async () => {
-    try {
-      const maxDate = moment().format('YYYY-MM-DD 23:59:59');
-      const res = await api.get(`/tasks?date=${maxDate}`);
-      setTasks(res.data);
-    } catch (e) {
-      showError(e);
-    }
-  };
+  }, [loadTasks]);
 
   const toggleFilter = () => {
     setShowDoneTasks(prev => !prev);
@@ -102,13 +143,20 @@ const TaskList: React.FC = () => {
         onCancel={() => setShowAddTask(false)}
         onSave={handleAddTask}
       />
-      <ImageBackground style={styles.background} source={todayImage}>
+      <ImageBackground
+        style={styles.background}
+        source={getImageForDaysAhead()}>
         <View style={styles.titleBar}>
-          <Text style={styles.title}>Hoje</Text>
-          <Text style={styles.subtitle}>{today}</Text>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.subtitle}>{dateSelected}</Text>
         </View>
-        <View style={styles.filterContainer}>
-          <TouchableOpacity onPress={toggleFilter} style={styles.filterButton}>
+        <View style={styles.iconsContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.openDrawer()}
+            style={styles.iconButton}>
+            <Icon name="bars" size={24} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleFilter} style={styles.iconButton}>
             <Icon
               name={showDoneTasks ? 'eye' : 'eye-slash'}
               size={24}
@@ -134,7 +182,7 @@ const TaskList: React.FC = () => {
         />
       </View>
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, {backgroundColor: getColorForDay()}]}
         onPress={() => setShowAddTask(true)}
         activeOpacity={0.8}>
         <Icon name="plus" size={20} color={commonStyles.colors.secondary} />
@@ -171,10 +219,17 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginBottom: 30,
   },
-  filterContainer: {
+  iconsContainer: {
     position: 'absolute',
-    top: Platform.select({ios: 50, android: 30}),
+    top: Platform.select({ ios: 50, android: 40 }),
+    left: 20,
     right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  iconButton: {
+    padding: 10,
   },
   filterButton: {
     padding: 10,
@@ -183,7 +238,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 30,
     bottom: 30,
-    backgroundColor: commonStyles.colors.today,
     width: 50,
     height: 50,
     borderRadius: 25,
