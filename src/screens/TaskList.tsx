@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AddTask from './AddTask';
 import {showError} from '../common';
 import api, {setAuthorizationToken} from '../services/api';
+import {useFocusEffect} from '@react-navigation/native';
+
 
 type TaskType = {
   id: string;
@@ -84,13 +86,15 @@ const TaskList: React.FC<TaskListProps> = ({title, daysAhead, navigation}) => {
     }
   }, [daysAhead]);
 
-  useEffect(() => {
-    const initialize = async () => {
-      await setAuthorizationToken();
-      loadTasks();
-    };
-    initialize();
-  }, [loadTasks]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetch = async () => {
+        await setAuthorizationToken();
+        loadTasks();
+      };
+      fetch();
+    }, [loadTasks]),
+  );
 
   const toggleFilter = () => {
     setShowDoneTasks(prev => !prev);

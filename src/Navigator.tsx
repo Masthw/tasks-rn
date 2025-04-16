@@ -13,7 +13,6 @@ const HomeDrawer: React.FC = () => (
     <Drawer.Screen name="Today" options={{title: 'Hoje', headerShown: false}}>
       {props => <TaskList {...props} title="Hoje" daysAhead={0} />}
     </Drawer.Screen>
-
     <Drawer.Screen
       name="Tomorrow"
       options={{title: 'Amanhã', headerShown: false}}>
