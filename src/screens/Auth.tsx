@@ -93,6 +93,7 @@ const Auth: React.FC<any> = ({navigation}) => {
         password,
       });
       await AsyncStorage.setItem('token', res.data.token);
+      await AsyncStorage.setItem('userData', JSON.stringify(res.data));
       await setAuthorizationToken();
       navigation.reset({
         index: 0,

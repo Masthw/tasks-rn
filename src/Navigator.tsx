@@ -3,12 +3,14 @@ import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
-
+import {RootStackParamList} from './types';
 import Auth from './screens/Auth';
 import TaskList from './screens/TaskList';
 import CustomDrawer from './components/CustomDrawer';
+import AuthOrApp from './screens/AuthOrApp';
 
-const Stack = createNativeStackNavigator();
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
 const TodayScreen: React.FC<any> = props => (
@@ -68,13 +70,14 @@ const DrawerRoutes: React.FC<DrawerRoutesWrapperProps> = ({route}) => {
 };
 
 export default function AppNavigator() {
+
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Auth"
+        initialRouteName="AuthOrApp"
         screenOptions={{headerShown: false}}>
+        <Stack.Screen name="AuthOrApp" component={AuthOrApp} />
         <Stack.Screen name="Auth" component={Auth} />
-        {/* Ao navegar para "Home", os parâmetros serão passados (ex: via navigation.reset) */}
         <Stack.Screen name="Home" component={DrawerRoutes} />
       </Stack.Navigator>
     </NavigationContainer>

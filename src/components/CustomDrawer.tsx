@@ -12,9 +12,14 @@ import {DrawerContentScrollView, DrawerItemList} from '@react-navigation/drawer'
 import commonStyles from '../commonStyles';
 import {useNavigation} from '@react-navigation/native';
 import md5 from 'md5';
+import { RootStackParamList } from '../types';
+import { StackNavigationProp} from '@react-navigation/stack';
+
+
+type NavigationProps = StackNavigationProp<RootStackParamList>;
 
 const CustomDrawer: React.FC<any> = (props) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProps>();
   const user = props.user;
 
   const userEmail = user?.email || 'sememail@exemplo.com';
@@ -31,8 +36,12 @@ const CustomDrawer: React.FC<any> = (props) => {
       {
         text: 'Sair',
         onPress: async () => {
+          await AsyncStorage.removeItem('userData');
           await AsyncStorage.removeItem('token');
-          navigation.navigate('Auth' as never);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Auth' }],
+          });
         },
       },
     ]);
