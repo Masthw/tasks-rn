@@ -16,9 +16,15 @@ interface AddTaskProps {
   visible: boolean;
   onCancel: () => void;
   onSave: (description: string, date: Date) => void;
+  color: string;
 }
 
-const AddTask: React.FC<AddTaskProps> = ({visible, onCancel, onSave}) => {
+const AddTask: React.FC<AddTaskProps> = ({
+  visible,
+  onCancel,
+  onSave,
+  color,
+}) => {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -49,7 +55,9 @@ const AddTask: React.FC<AddTaskProps> = ({visible, onCancel, onSave}) => {
       </TouchableWithoutFeedback>
 
       <View style={styles.container}>
-        <Text style={styles.header}>Nova Tarefa</Text>
+        <Text style={[styles.header, {backgroundColor: color}]}>
+          Nova Tarefa
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Informe a Descrição..."
@@ -77,10 +85,10 @@ const AddTask: React.FC<AddTaskProps> = ({visible, onCancel, onSave}) => {
         )}
         <View style={styles.buttons}>
           <TouchableOpacity onPress={onCancel}>
-            <Text style={styles.button}>Cancelar</Text>
+          <Text style={[styles.button, {color}]}>Cancelar</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSave}>
-            <Text style={styles.button}>Salvar</Text>
+            <Text style={[styles.button, {color}]}>Salvar</Text>
           </TouchableOpacity>
         </View>
       </View>

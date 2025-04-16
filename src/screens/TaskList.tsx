@@ -142,6 +142,7 @@ const TaskList: React.FC<TaskListProps> = ({title, daysAhead, navigation}) => {
         visible={showAddTask}
         onCancel={() => setShowAddTask(false)}
         onSave={handleAddTask}
+        color={getColorForDay()}
       />
       <ImageBackground
         style={styles.background}
