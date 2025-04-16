@@ -94,7 +94,10 @@ const Auth: React.FC<any> = ({navigation}) => {
       });
       await AsyncStorage.setItem('token', res.data.token);
       await setAuthorizationToken();
-      navigation.navigate('Home');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home', params: { user: res.data } }],
+      });
       showSuccess(`Bem-vindo(a), ${res.data.name}!`);
       setEmail('');
       setPassword('');
